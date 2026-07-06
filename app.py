@@ -25,9 +25,9 @@ client = Groq(api_key=api_key)
 # ==========================================
 # 2. WEB PAGE INTERFACE DESIGN
 # ==========================================
-st.set_page_config(page_title="My Custom Groq AI", page_icon="🤖", layout="centered")
-st.title("🤖 My First Custom AI Chatbot")
-st.caption("Built with Groq LPU Hardware, GitHub, and Streamlit")
+st.set_page_config(page_title="Gapusy AI", page_icon="🤖", layout="centered")
+st.title("🤖 Gapusy AI")
+st.caption("This AI is my first project pls appreciate it")
 
 # ==========================================
 # 3. MULTI-USER MEMORY (Session State)
