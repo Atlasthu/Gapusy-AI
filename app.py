@@ -27,7 +27,7 @@ client = Groq(api_key=api_key)
 # ==========================================
 st.set_page_config(page_title="Gapusy AI", page_icon="🤖", layout="centered")
 st.title("🤖 Gapusy AI")
-st.caption("This AI is my first project pls appreciate it")
+st.caption("Made by Atlasthu AKA Dhruv Mishra")
 
 # ==========================================
 # 3. MULTI-USER MEMORY (Session State)
