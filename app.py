@@ -66,10 +66,17 @@ if user_query := st.chat_input("Ask your AI anything..."):
             )
             
             # Helper function to unpack data chunks from the network stream
-            def generate_tokens():
-                for chunk in stream:
-                    if chunk.choices.delta.content:
-                        yield chunk.choices.delta.content
+            # Unpack data chunks safely from the Groq network stream
+def generate_tokens():
+    for chunk in stream:
+        # Safely grab the choices list from the chunk object
+        choices = getattr(chunk, "choices", [])
+        if choices and len(choices) > 0:
+            delta = getattr(choices[0], "delta", None)
+            content = getattr(delta, "content", None)
+            if content:
+                yield content
+
 
             # Streamlit writes the incoming tokens directly onto the UI in real time
             response_text = st.write_stream(generate_tokens())
