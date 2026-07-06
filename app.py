@@ -5,7 +5,6 @@ import os
 # ==========================================
 # 1. SECURE API KEY CONFIGURATION
 # ==========================================
-# This looks for the hidden key stored safely in your hosting server's vault
 if "GROQ_API_KEY" in os.environ:
     api_key = os.environ["GROQ_API_KEY"]
 else:
@@ -14,29 +13,25 @@ else:
     except Exception:
         api_key = None
 
-# Fallback error check if the key is missing entirely
 if not api_key:
     st.error("🔑 Groq API Key missing! Please add it to your Streamlit Advanced Settings / Secrets.")
     st.stop()
 
-# Initialize the Groq client connection
 client = Groq(api_key=api_key)
 
 # ==========================================
 # 2. WEB PAGE INTERFACE DESIGN
 # ==========================================
-st.set_page_config(page_title="Gapusy AI", page_icon="🤖", layout="centered")
-st.title("🤖 Gapusy AI")
-st.caption("Made by Atlasthu AKA Dhruv Mishra")
+st.set_page_config(page_title="My Custom Groq AI", page_icon="🤖", layout="centered")
+st.title("🤖 My First Custom AI Chatbot")
+st.caption("Built with Groq LPU Hardware, GitHub, and Streamlit")
 
 # ==========================================
 # 3. MULTI-USER MEMORY (Session State)
 # ==========================================
-# Keeps chat history isolated per user browser tab so histories don't mix
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Redraw previous chat messages on page refresh
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.write(msg["content"])
@@ -44,44 +39,33 @@ for msg in st.session_state.messages:
 # ==========================================
 # 4. CHAT LOGIC AND RESPONSE STREAMING
 # ==========================================
-# Look for user input from the chat bar
 if user_query := st.chat_input("Ask your AI anything..."):
     
-    # Render user input to the screen and log to history
     st.session_state.messages.append({"role": "user", "content": user_query})
     with st.chat_message("user"):
         st.write(user_query)
 
-    # Generate assistant streaming text block
     with st.chat_message("assistant"):
         try:
-            # Query the fast Llama-3.3 architecture hosted on Groq
             stream = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
                 messages=[
                     {"role": m["role"], "content": m["content"]}
                     for m in st.session_state.messages
                 ],
-                stream=True,  # Tells the brain to stream text back token by token
+                stream=True,
             )
             
-            # Helper function to unpack data chunks from the network stream
-            # Unpack data chunks safely from the Groq network stream
-def generate_tokens():
-    for chunk in stream:
-        # Safely grab the choices list from the chunk object
-        choices = getattr(chunk, "choices", [])
-        if choices and len(choices) > 0:
-            delta = getattr(choices[0], "delta", None)
-            content = getattr(delta, "content", None)
-            if content:
-                yield content
+            # Bulletproof streaming function
+            def generate_tokens():
+                for chunk in stream:
+                    if hasattr(chunk, 'choices') and len(chunk.choices) > 0:
+                        choice = chunk.choices[0]
+                        if hasattr(choice, 'delta') and hasattr(choice.delta, 'content'):
+                            if choice.delta.content:
+                                yield choice.delta.content
 
-
-            # Streamlit writes the incoming tokens directly onto the UI in real time
             response_text = st.write_stream(generate_tokens())
-            
-            # Append the completed AI response back into historical context
             st.session_state.messages.append({"role": "assistant", "content": response_text})
             
         except Exception as e:
